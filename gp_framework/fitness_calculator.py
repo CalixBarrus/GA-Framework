@@ -51,6 +51,10 @@ class FitnessCalculator(ABC):
     def target_fitness(self):
         return self._target_fitness
 
+    @property
+    def converter(self) -> PhenotypeConverter:
+        return self._converter
+
     def calculate_normalized_fitness(self, genotype: Genotype) -> float:
         return self.calculate_fitness(genotype) / self._target_fitness
 
@@ -60,13 +64,11 @@ class FitnessCalculator(ABC):
         Calculate the fitness of the given phenotype
         :param genotype: the Genotype to calculate the fitness of. It will be
         automatically converted to the correct phenotype.
-        :return: the fitness of phenotype
+        :return: the fitness of phenotype. This must be a number in
+        [0, _target_fitness]. Genotypes that are incrementally closer to the
+        target solution should have incrementally higher fitness values
         """
         pass
-
-    @property
-    def converter(self) -> PhenotypeConverter:
-        return self._converter
 
 
 class FitnessCalculatorStringMatch(FitnessCalculator):
@@ -164,6 +166,9 @@ class FitnessCalculatorBlackJack(FitnessCalculator):
 
 def make_FitnessCalculator(application: Application, parameters: List[any]) -> FitnessCalculator:
     if application == Application.STRING_MATCH:
+        """
+        parameters[0]: The target string
+        """
         if not isinstance(parameters[0], str):
             raise InvalidParameterException("First Parameter must be a str.")
         target_length = len(parameters[0])
